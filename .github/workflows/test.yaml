@@ -1,0 +1,25 @@
+name: test
+
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
+      - uses: sigstore/cosign-installer@v2.8.1
+        with:
+          cosign-release: 'v1.13.1'
+      - run: curl -L -O https://github.com/terraform-linters/tflint/releases/download/v0.43.0/checksums.txt
+      - run: |
+          cosign verify-blob \
+            --signature https://github.com/terraform-linters/tflint/releases/download/v0.43.0/checksums.txt.keyless.sig \
+            --certificate https://github.com/terraform-linters/tflint/releases/download/v0.43.0/checksums.txt.pem \
+            checksums.txt
+        env:
+          COSIGN_EXPERIMENTAL: "1"
